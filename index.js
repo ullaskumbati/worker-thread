@@ -1,18 +1,30 @@
 const express = require("express");
+const { Worker } = require("worker_threads");
+const path = require("path");
 
 const app = express();
 const PORT = 4000;
 
-function generateHugeReportSynchronously() {
-  const start = Date.now();
+function generateReportInWorker() {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(
+      path.join(__dirname, "reportWorker.js")
+    );
 
-  while (Date.now() - start < 20000) {
-    Math.sqrt(Math.random() * 1000000);
-  }
+    worker.on("message", (result) => {
+      resolve(result);
+    });
 
-  return {
-    message: "Report generated successfully",
-  };
+    worker.on("error", (error) => {
+      reject(error);
+    });
+
+    worker.on("exit", (code) => {
+      if (code !== 0) {
+        reject(new Error(`Worker stopped with exit code ${code}`));
+      }
+    });
+  });
 }
 
 app.get("/", (req, res) => {
@@ -20,14 +32,23 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-app.get("/report", (req, res) => {
-  console.log("Report started");
+app.get("/report", async (req, res) => {
+  try {
+    console.log("Report request received");
 
-  const result = generateHugeReportSynchronously();
+    // CPU-intensive work happens in Worker Thread
+    const result = await generateReportInWorker();
 
-  console.log("Report finished");
+    console.log("Report finished");
 
-  res.json(result);
+    res.json(result);
+  } catch (error) {
+    console.error("Report generation failed:", error);
+
+    res.status(500).json({
+      message: "Failed to generate report",
+    });
+  }
 });
 
 app.listen(PORT, () => {
