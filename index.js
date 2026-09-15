@@ -20,6 +20,8 @@ function generateReportInWorker() {
     });
 
     worker.on("exit", (code) => {
+      console.log("Worker exited with code:", code);
+
       if (code !== 0) {
         reject(new Error(`Worker stopped with exit code ${code}`));
       }

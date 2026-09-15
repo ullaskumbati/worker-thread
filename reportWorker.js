@@ -1,12 +1,17 @@
 const { parentPort } = require("worker_threads");
 
+console.log("Worker started");
+
 function generateHugeReportSynchronously() {
+  console.log("Report generation started");
+
   const start = Date.now();
 
-  // Simulate 20 seconds of CPU-intensive work
   while (Date.now() - start < 20000) {
     Math.sqrt(Math.random() * 1000000);
   }
+
+  console.log("Report generation completed");
 
   return {
     message: "Report generated successfully",
@@ -16,5 +21,8 @@ function generateHugeReportSynchronously() {
 
 const result = generateHugeReportSynchronously();
 
-// Send result back to main thread
+console.log("Sending result to main thread");
+
 parentPort.postMessage(result);
+
+console.log("Worker work completed");
