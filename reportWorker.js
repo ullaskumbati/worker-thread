@@ -18,7 +18,7 @@ function generateHugeReportSynchronously() {
     generatedAt: new Date().toISOString(),
   };
 }
-
+console.log("started");
 const result = generateHugeReportSynchronously();
 
 console.log("Sending result to main thread");
