@@ -624,3 +624,32 @@ app.get("/report", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+//
+app.get("/", (req, res) => {
+  console.log("Home request received");
+  res.send("Server is running");
+});
+
+app.get("/report", async (req, res) => {
+  try {
+    console.log("Report request received");
+
+    // CPU-intensive work happens in Worker Thread
+    const result = await generateReportInWorker();
+
+    console.log("Report finished");
+
+    res.json(result);
+  } catch (error) {
+    console.error("Report generation failed:", error);
+
+    res.status(500).json({
+      message: "Failed to generate report",
+    });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
